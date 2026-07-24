@@ -17,12 +17,14 @@
 - [x] Fase 6.2 — Listado auditado (curso/auditoria-dependencias.md) — confirmada por el usuario el 2026-07-22
 - [x] Fase 7 — Índice generado como secuencia única (curso/indice.md) — 57 clases (21 conocimiento + 36 construcción); reescrito tras corrección de formato (ya no son 2 secciones separadas)
 - [x] Fase 7.1 — Índice auditado de punta a punta (curso/auditoria-indice.md) — corrigió agrupación indebida (K14/K15); confirmada por el usuario el 2026-07-22
-- [ ] Fase 8 — Clases de construcción generadas (ver detalle abajo) — SIGUIENTE
+- [ ] Fase 8 — Clases de construcción generadas (ver detalle abajo) — EN CURSO (Clase 01 de 57 hecha)
 - [ ] Fase 9 — Bloque de integración de BD real
 - [ ] Fase 10 — Auditoría final (curso/auditoria-final.md)
 
 ## Clases (Fases 8 y 9)
-(sin clases todavía — arranca la Fase 8)
+- [x] Clase 01 — Qué es un componente de React y cómo React lo convierte en pantalla — [conocimiento] — hecha el 2026-07-22 (K10)
+- [ ] Clase 02 — Formulario controlado en React (K11) — [conocimiento] — SIGUIENTE
+... (Clases 03 a 57 según curso/indice.md, se van agregando a esta lista a medida que se acercan — ver curso/indice.md para el detalle completo de las 57)
 
 ## Notas para retomar
 Arranque del curso (2026-07-22). Proyecto: TodoList con login, recordatorios por SMS y frontend React+Vite (según `funcionalidades.md`). `curso/` y `app/` no existían antes de esta sesión — se parte de cero.
@@ -31,4 +33,6 @@ Fase 1: se extrajeron 12 RF. Los bullets de la sección "Interfaz de usuario" de
 
 Fase 1.5: tabla de prioridad confirmada. Fases 2-7.1 completas y confirmadas (ver checklist arriba). Índice final: 57 clases (`curso/indice.md`).
 
-Próximo paso: arrancar la Fase 8 con la Clase 01.
+Fase 8 en curso. Clase 01 (React y componentes, K10) hecha el 2026-07-22, en su rama, commiteada.
+
+Próximo paso: Clase 02 (formulario controlado, K11).
