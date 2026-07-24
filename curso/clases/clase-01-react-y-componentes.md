@@ -4,7 +4,24 @@
 
 Un **componente** de React es una función de JavaScript que describe un pedazo de interfaz — qué se tiene que ver, no cómo dibujarlo píxel a píxel.
 
-¿Por qué se escribe así, en vez de HTML y JavaScript en archivos separados? Esa separación funciona, y todavía se usa en muchos proyectos: el HTML define qué se muestra, y un archivo de JavaScript aparte decide cuándo cambiarlo. React propone juntar las dos cosas en un mismo lugar, el componente — más cómodo para interfaces que cambian seguido, porque no hace falta acordarse de actualizar dos archivos distintos cada vez que algo cambia ([react.dev — Writing Markup with JSX](https://react.dev/learn/writing-markup-with-jsx)).
+¿Por qué se escribe así, en vez de HTML y JavaScript en archivos separados? Esa separación funciona, y todavía se usa en muchos proyectos: el HTML define qué se muestra, y un archivo de JavaScript aparte decide cuándo cambiarlo. React propone juntar las dos cosas en un mismo lugar, el componente — más cómodo para interfaces que cambian seguido, porque no hace falta acordarse de actualizar dos archivos distintos cada vez que algo cambia ([react.dev — Writing Markup with JSX](https://react.dev/learn/writing-markup-with-jsx)):
+
+```html
+<!-- enfoque separado: el HTML define qué se muestra... -->
+<button id="miBoton">Guardar</button>
+```
+```js
+// ...y un archivo de JS aparte decide cuándo cambiarlo -- dos lugares
+// distintos para una sola pieza de interfaz.
+document.getElementById('miBoton').addEventListener('click', () => { /* ... */ });
+```
+```jsx
+// enfoque de componente: la descripción (qué se ve) y la lógica que
+// la puede cambiar quedan juntas, en la misma función.
+function BotonGuardar() {
+  return <button onClick={() => { /* ... */ }}>Guardar</button>;
+}
+```
 
 ## 2. Cómo se escribe un componente, demostrado
 
@@ -15,8 +32,8 @@ Un componente es, literalmente, una función con dos reglas: **su nombre empieza
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-function Bienvenida() {
-  return React.createElement(
+function Bienvenida() { // regla 1: nombre con mayúscula inicial
+  return React.createElement( // regla 2: devuelve una descripción, no la dibuja
     'section',
     null,
     React.createElement('h1', null, 'Hola'),
@@ -24,7 +41,7 @@ function Bienvenida() {
   );
 }
 
-console.log(renderToStaticMarkup(React.createElement(Bienvenida)));
+console.log(renderToStaticMarkup(React.createElement(Bienvenida))); // ← acá recién se convierte en HTML
 ```
 ```
 $ node demo1.mjs
@@ -41,7 +58,9 @@ function Bienvenida() {
   return React.createElement('h1', null, 'Hola');
 }
 
+// con el NOMBRE de la función -- React la invoca
 console.log('createElement(Bienvenida):  ', renderToStaticMarkup(React.createElement(Bienvenida)));
+// con un STRING en minúscula -- React nunca llama a Bienvenida
 console.log('createElement("bienvenida"):', renderToStaticMarkup(React.createElement('bienvenida', null, 'Hola')));
 ```
 ```
@@ -60,12 +79,12 @@ De esas tres, la del elemento raíz es la que tiene un efecto real, visible en e
 
 ```js
 // demo3.mjs
-const conDiv = React.createElement('div', null,
+const conDiv = React.createElement('div', null, // <div> es un elemento real
   React.createElement('h1', null, 'Hola'),
   React.createElement('p', null, 'Texto'));
 console.log('con <div> envolviendo:', renderToStaticMarkup(conDiv));
 
-const conFragment = React.createElement(React.Fragment, null,
+const conFragment = React.createElement(React.Fragment, null, // agrupa sin agregar etiqueta
   React.createElement('h1', null, 'Hola'),
   React.createElement('p', null, 'Texto'));
 console.log('con Fragment:         ', renderToStaticMarkup(conFragment));
@@ -84,11 +103,11 @@ Un componente puede recibir datos desde afuera — se llaman **props**, y llegan
 
 ```js
 // demo4.mjs
-function Greeting(props) {
+function Greeting(props) { // entra: props, un objeto -- acá se usa props.name
   return React.createElement('section', { className: 'greeting' },
-    React.createElement('h1', null, `Hola, ${props.name}`),
+    React.createElement('h1', null, `Hola, ${props.name}`), // el dato entra directo en el texto
     React.createElement('p', null, 'Bienvenido al curso.'));
-}
+} // sale: la descripción de interfaz, con el dato ya insertado
 console.log(renderToStaticMarkup(React.createElement(Greeting, { name: 'Rodrigo' })));
 console.log(renderToStaticMarkup(React.createElement(Greeting, { name: 'Ana' })));
 ```
@@ -105,8 +124,8 @@ Un componente vale la pena si sirve para más de un caso — reutilizarlo dos ve
 ```js
 // demo5.mjs
 const lista = React.createElement('div', null,
-  React.createElement(Greeting, { name: 'Ana' }),
-  React.createElement(Greeting, { name: 'Luis' }));
+  React.createElement(Greeting, { name: 'Ana' }),  // 1ra vez que se llama a Greeting
+  React.createElement(Greeting, { name: 'Luis' })); // 2da vez, mismo componente
 console.log(renderToStaticMarkup(lista));
 ```
 ```
@@ -133,19 +152,34 @@ El paso Commit necesita un DOM real del navegador para comparar una versión con
   ```js
   // demo6.mjs -- no hace falta React para ver esto, es JavaScript puro
   function Padre() {
-    function Hijo() {}
+    function Hijo() {} // se vuelve a definir cada vez que Padre() se ejecuta
     return Hijo;
   }
-  const hijo1 = Padre();
-  const hijo2 = Padre();
-  console.log('¿misma función?', hijo1 === hijo2);
+  const hijo1 = Padre(); // primera "definición" de Hijo
+  const hijo2 = Padre(); // segunda "definición" -- otra función, mismo código
+  console.log('¿misma función?', hijo1 === hijo2); // ← acá se compara
   ```
   ```
   $ node demo6.mjs
   ¿misma función? false
   ```
   React identifica a un componente por su función, no por su nombre — si en cada Render la función es "nueva" (como acá), React trata al componente como si fuera otro completamente distinto: lo desmonta y lo vuelve a montar de cero en vez de actualizarlo. Por eso los componentes se definen siempre al nivel superior del archivo, nunca adentro de otro.
-- **El código nuevo de React ya no se escribe con "class components"** (una forma antigua de definir componentes usando clases de JavaScript en vez de funciones). Sigue existiendo en proyectos viejos, pero la documentación oficial y la comunidad usan funciones — es lo que se usa en este curso.
+- **El código nuevo de React ya no se escribe con "class components"** (una forma antigua de definir componentes usando clases de JavaScript en vez de funciones). Sigue existiendo en proyectos viejos, pero la documentación oficial y la comunidad usan funciones — es lo que se usa en este curso:
+  ```js
+  // class component -- forma antigua, todavía válida, ya no la que se enseña
+  class Bienvenida extends React.Component {
+    render() { // el método que devuelve la descripción de interfaz
+      return React.createElement('h1', null, 'Hola');
+    }
+  }
+  ```
+  ```js
+  // function component -- la forma de todo este curso (demo1.mjs, punto 2)
+  function Bienvenida() {
+    return React.createElement('h1', null, 'Hola');
+  }
+  ```
+  Las dos producen el mismo resultado (`<h1>Hola</h1>`) — la diferencia es la sintaxis para definir el componente, no el HTML final.
 
 ## 7. Lo que hay que poder responder sobre esto
 

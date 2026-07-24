@@ -73,7 +73,8 @@ Lo único que se conserva y se reutiliza tal cual es `.claude/skills/curso-desde
 - **Patrones de diseño:** se aplican solo cuando resuelven un problema real de esa clase concreta.
 - **Modelo de clases (POO):** el código del proyecto organiza sus entidades y responsabilidades en clases de programación, no en funciones sueltas.
 - **Versiones de tecnologías:** siempre investigadas de verdad (con fuente y fecha).
-- **Comentarios en el código:** todo código generado identifica con comentarios qué hace, qué entra y qué sale.
+- **Comentarios en el código:** línea por línea, en la secuencia en que la prosa fue explicando cada cosa — nunca un bloque único `Entra:/Sale:` al principio. Ver `references/reglas-de-clase.md` § Regla 6.
+- **Representación al cierre de cada párrafo (Regla 6):** mismo estatus inquebrantable que la Regla fundamental — toda clase pasa la auditoría obligatoria (párrafo por párrafo, aislado de sus vecinos, cubriendo buena práctica/mala práctica/error) antes de darse por terminada.
 - **Sin proyecto de práctica separado:** el avance real en `curso/app/` es la única práctica de cada clase.
 
 ## Estructura de carpetas del repositorio

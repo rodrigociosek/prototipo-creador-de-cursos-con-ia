@@ -14,7 +14,7 @@ De estos tres marcos, esta es la regla operativa que toda clase cumple, sin exce
 
 1. **Todo concepto se explica con su porqué, nunca solo con su qué.** No alcanza con decir qué hace algo — hay que justificar por qué existe y por qué se resuelve así y no de otra forma.
 2. **Ningún término técnico se usa antes de definirse en lenguaje simple.** Si hace falta una palabra nueva, se define primero con palabras que el lector ya conoce — nunca se asume que ya la sabe.
-3. **Todo concepto nuevo se acompaña de al menos un ejemplo aplicado**, no solo la definición de manual — ver algo en uso es lo que lo vuelve concreto (Bloom: *exemplify*). La mecánica exacta de cómo y cuándo se muestra ese ejemplo — inmediatamente, afirmación por afirmación — está en la Regla 6 más abajo.
+3. **Todo concepto nuevo se acompaña de al menos un ejemplo aplicado**, no solo la definición de manual — ver algo en uso es lo que lo vuelve concreto (Bloom: *exemplify*). La mecánica exacta de cómo y cuándo se muestra ese ejemplo — inmediatamente, afirmación por afirmación, párrafo por párrafo — está en la **Regla 6 más abajo, que tiene el mismo estatus que esta Regla fundamental: no se puede romper bajo ninguna circunstancia**, no es una regla más entre las 8.
 4. **Todo concepto se conecta explícitamente con algo que el lector ya sabe** (ver el chequeo recursivo, regla 7 más abajo) — entender es enlazar lo nuevo con lo ya sabido, no memorizar un dato aislado (Wiggins & McTighe: *interpretación*).
 5. **Antes de dar una explicación por cerrada, se le aplica el test de Feynman**: ¿esta explicación se entendería sin haber leído nada más de la clase, sin ningún término sin definir? Si la respuesta es no, hay un hueco que se llena antes de seguir.
 6. **Se prioriza la transferencia sobre la repetición.** Al razonar el resultado de un ejemplo o una ejecución real, se plantea qué pasaría con una variación (otro dato de entrada, otro caso) en vez de solo confirmar que el ejemplo dado funcionó — eso es lo que distingue haber entendido de haber memorizado un resultado puntual (Bloom: *predecir/inferir*).
@@ -82,7 +82,9 @@ Se evalúan clase a clase. Se aplican únicamente si resuelven un problema real 
 
 El cuerpo de la clase es una secuencia de pasos numerados, de punta a punta, sin omitir ninguno. Cada paso parte de donde dejó el paso anterior — nunca es una lista de puntos inconexos. El número de pasos varía libremente según el tema: una clase de conocimiento puro puede tener pocos pasos conceptuales; una clase de construcción puede tener muchos pasos de código.
 
-### 6. Cada afirmación se demuestra ahí mismo, no se deja para el final
+### 6. Cada afirmación se demuestra ahí mismo, no se deja para el final (no se puede romper)
+
+**Esta regla tiene el mismo estatus que la Regla fundamental: no se puede romper bajo ninguna circunstancia — ni por brevedad, ni porque el tema "parezca" no necesitarlo, ni por avanzar más rápido.** No es una preferencia de estilo ni una entre ocho reglas equivalentes: es, junto con la Regla fundamental, la base de todo el documento. Si al escribir una clase falta una representación al cierre de un párrafo o un comentario de código fuera de secuencia, la clase está incompleta y se corrige antes de darla por terminada — no se avanza al paso siguiente con ese hueco pendiente.
 
 Todo paso dice explícitamente, antes o junto con el contenido:
 - **Qué queremos generar/lograr** — el propósito de ese paso puntual.
@@ -94,6 +96,14 @@ Además, de forma obligatoria y sin excepción: **toda afirmación sobre cómo s
 Esto aplica igual a clases de conocimiento y de construcción:
 - **En una clase de conocimiento**, cada afirmación sobre el comportamiento de un concepto (qué se reinicia, qué dispara, qué devuelve, qué cambia) se corta ahí mismo con el fragmento ejecutable mínimo que la demuestra — no hace falta el ejemplo completo del concepto, alcanza con lo mínimo para ver esa afirmación puntual en acción.
 - **En una clase de construcción**, cada pieza de código nueva que cambia el comportamiento observable (una ruta nueva, una validación nueva, un campo nuevo) se demuestra apenas se agrega — nunca se escribe el archivo completo primero y se prueba todo junto recién al final. Si una pieza todavía no es ejecutable de forma aislada (por ejemplo, una función que solo tiene sentido dentro de una ruta ya completa), se demuestra con el fragmento mínimo que sí puede correr por su cuenta (una llamada directa a la función, un caso suelto) antes de integrarla a la pieza mayor.
+
+**Auditoría obligatoria, aparte de escribir — no alcanza con tenerlo en mente mientras se redacta.** Aplicar la regla "mientras se escribe" no es suficiente: un párrafo sin representación pasa desapercibido si los párrafos vecinos sí la tienen — se siente que la sección "ya está demostrada" aunque una afirmación puntual haya quedado sin nada. Por eso, después de terminar de escribir la clase entera, se hace una segunda pasada dedicada solo a esto:
+
+1. Se enumeran, en orden, todos los párrafos de la clase que explican una funcionalidad o un comportamiento (no los de transición ni los puramente narrativos tipo "ahora se agrega X").
+2. Para **cada uno, aislado de sus vecinos** — que el párrafo anterior o el siguiente ya tengan su representación no cuenta para este — se responde una sola pregunta: *¿este párrafo puntual tiene su propia representación pegada, inmediatamente después de él?*
+3. Todo párrafo que responda "no" se corrige ahí mismo, antes de dar la clase por terminada. La clase no está lista hasta que los 100% de los párrafos de esa lista respondan "sí".
+
+Esta auditoría es un paso obligatorio propio, con el mismo peso que las auditorías de Fase 4.1/7.1 sobre `curso/tareas.md`/`curso/indice.md` — no una revisión opcional "si sobra tiempo".
 
 **Ejemplo de la mecánica** (afirmación → corte → demostración ejecutada → recién ahí se retoma la explicación):
 
@@ -131,9 +141,32 @@ Esto aplica igual a clases de conocimiento y de construcción:
 > texto tras "escribir": "Comprar leche"
 > ```
 
-Ningún paso muestra código o una acción sin decir antes para qué es y dónde va. Todo código incluido lleva comentarios que identifican qué hace, qué entra y qué sale.
+Ningún paso muestra código o una acción sin decir antes para qué es y dónde va.
 
-**Qué NO hacer**: no expliques dos o más afirmaciones de comportamiento seguidas en prosa y recién después las demuestres juntas — cada una se corta y se muestra por separado, en el momento exacto en que se afirma. No dejes la única demostración de un paso para un bloque "vamos a probar esto" al final del paso o de la clase — eso es exactamente el patrón que esta regla reemplaza. No uses una demostración grande como sustituto de las chicas — las demostraciones puntuales por afirmación son obligatorias aunque más adelante también haya una demostración mayor que integre varias piezas (eso sigue aplicando, ver "Ejecución real, siempre").
+**Chequeo obligatorio al cerrar cada párrafo, sin excepción**: todo párrafo que explica la funcionalidad de algo termina con su representación pegada, antes de pasar al párrafo siguiente. Al terminar de escribir cualquier párrafo así, se hace la misma pregunta: *¿qué acabo de afirmar, y cómo se lo muestro al usuario ahora mismo?* Si no hay nada mostrado todavía, se agrega ahí — nunca se lo pospone confiando en que un párrafo más adelante ya va a traer una demostración relacionada. Esto se aplica constantemente, párrafo tras párrafo, en toda la clase — no solo en los momentos que "parecen" requerir una demo (una secuencia, un cambio de estado). Un párrafo puramente conceptual (una comparación, un motivo de diseño) también se cierra con alguna representación mínima que lo haga concreto — un fragmento de código, una comparación lado a lado, un diagrama chico — nunca queda solo en prosa.
+
+**Tipos de caso que hay que cubrir, cuando existan para ese concepto** (no todos aplican siempre, pero cuando aplican, cada uno tiene su propia representación, no se asume que uno "cubre" al resto):
+- **Buena práctica / uso correcto** — el comportamiento esperado, funcionando (la mayoría de las demos son de este tipo).
+- **Mala práctica / antipatrón** — qué pasa si se hace mal, aunque no tire ningún error (p. ej. el array mal ubicado de la Clase 05, el `value` sin `onChange` de la Clase 02).
+- **Error/falla real** — un mensaje de error, un warning, un código de estado de fallo, ejecutado de verdad, no descrito de memoria (p. ej. el `ERR_HTTP_HEADERS_SENT` de la Clase 04).
+- **Caso límite** — un valor vacío, opcional, ausente, o el primer/último elemento de una secuencia, cuando el concepto tiene uno relevante.
+Antes de cerrar una clase, para cada concepto central que enseña o construye, se revisa cuáles de estos cuatro tipos aplican — y de los que aplican, ninguno queda sin representar.
+
+**Los comentarios del código siguen la misma secuencia que la explicación, línea por línea — no un bloque único arriba.** Cada cosa que la prosa fue explicando se señala, con un comentario corto, en la línea exacta del código donde ocurre, en el mismo orden en que se explicó — no se resume todo en un bloque `// Entra: X — Sale: Y` al principio de la función, desconectado de las líneas reales. La salida se marca donde sea más claro para ese caso puntual: en la misma línea del valor que se devuelve (`return tarea; // ← la tarea ya con su id`) o en un comentario al final del bloque — lo que sea más eficiente, no un formato único obligatorio.
+
+**Ejemplo de comentarios en secuencia** (mismo método `crear` de un repositorio, comentado línea por línea en el orden en que se explica, no en un bloque previo):
+```js
+crear(datos) {
+  // toma el id ACTUAL de #siguienteId, recién DESPUÉS lo incrementa
+  // (por el ++ después de la variable) -- y con ...datos copia adentro
+  // todos los campos que llegaron (título, descripción, fecha...)
+  const tarea = { id: this.#siguienteId++, ...datos };
+  this.#tareas.push(tarea);      // se guarda en el array interno
+  return tarea;                  // ← salida: el registro ya con su id
+}
+```
+
+**Qué NO hacer**: no expliques dos o más afirmaciones de comportamiento seguidas en prosa y recién después las demuestres juntas — cada una se corta y se muestra por separado, en el momento exacto en que se afirma. No dejes la única demostración de un paso para un bloque "vamos a probar esto" al final del paso o de la clase — eso es exactamente el patrón que esta regla reemplaza. No uses una demostración grande como sustituto de las chicas — las demostraciones puntuales por afirmación son obligatorias aunque más adelante también haya una demostración mayor que integre varias piezas (eso sigue aplicando, ver "Ejecución real, siempre"). No dejes un párrafo conceptual sin representación solo porque "no tiene código real todavía" — se representa igual, con lo mínimo que exista en ese momento. No resumas la explicación del código en un comentario único al principio de la función — los comentarios van en la línea que corresponde a cada cosa explicada.
 
 ### 7. El chequeo recursivo de conocimiento va entretejido en cada paso, no aparte
 
@@ -162,7 +195,8 @@ Antes de escribir el contenido de una clase de conocimiento (o la parte teórica
 - No fuerces una estructura de secciones igual entre clases distintas — las reglas de arriba son el contrato, no una plantilla de títulos.
 - No agregues un bloque de metadatos (Tipo/Depende de/Introduce/Tareas que avanza/RF relacionados) antes del contenido, ni abras la clase justificando su lugar en el curso con IDs internos (RF-XX, T-XX, número de Clase) — ver "La clase empieza directo en el tema" más arriba.
 - No escribas un paso sin su qué/cómo/dónde.
-- No expliques dos o más afirmaciones de comportamiento seguidas y las demuestres recién después, juntas — cada afirmación se corta ahí mismo con su propia demostración ejecutada (Regla 6), sea clase de conocimiento o de construcción.
+- No expliques dos o más afirmaciones de comportamiento seguidas y las demuestres recién después, juntas — cada afirmación se corta ahí mismo con su propia demostración ejecutada (Regla 6), sea clase de conocimiento o de construcción. **Esto no se negocia ni se omite nunca — Regla 6 tiene el mismo estatus inquebrantable que la Regla fundamental.**
+- No cierres un párrafo que explica funcionalidad (funcione bien o mal) sin su representación pegada, y no escribas un comentario de código fuera de la secuencia en la que la prosa fue explicando cada cosa — releé la clase completa antes de darla por terminada buscando específicamente estos dos huecos.
 - No introduzcas un patrón de diseño que no resuelve nada real en esa clase.
 - No modifiques la rama principal fuera del punto 2, ni publiques en un remoto sin permiso explícito en el momento.
 - No des un concepto por sabido sin haberlo confirmado contra `curso/conceptos-enseñados.md`.

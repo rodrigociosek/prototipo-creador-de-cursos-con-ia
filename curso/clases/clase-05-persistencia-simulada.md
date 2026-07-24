@@ -2,7 +2,18 @@
 
 ## 1. Qué es "persistencia" y por qué el servidor solo no alcanza
 
-Un servidor Express, por sí solo (Clase 04), no recuerda nada entre una petición y otra — cada función de ruta hace su trabajo y termina. Para que crear una tarea (T-01) sirva de algo, esa tarea tiene que quedar guardada en algún lado, disponible para cuando después se pida la lista completa (otra tarea, otra petición). A eso se le llama **persistencia**: que un dato sobreviva más allá del momento puntual en que se creó.
+Un servidor Express, por sí solo (Clase 04), no recuerda nada entre una petición y otra — cada función de ruta hace su trabajo y termina:
+
+```js
+// sin persistencia -- cada petición parte de cero
+app.post('/tasks', (req, res) => {
+  const tareas = []; // se recrea vacío en cada petición -- nunca acumula nada
+  tareas.push(req.body);
+  res.json(tareas); // siempre devuelve un array de 1, nunca "todas" las tareas
+});
+```
+
+Para que crear una tarea (T-01) sirva de algo, esa tarea tiene que quedar guardada en algún lado, disponible para cuando después se pida la lista completa (otra tarea, otra petición). A eso se le llama **persistencia**: que un dato sobreviva más allá del momento puntual en que se creó — el problema de arriba es, de hecho, el mismo mecanismo que el punto 2 va a comprobar ejecutado.
 
 La forma real y definitiva de persistencia para este proyecto es una base de datos (PostgreSQL, ya elegida en `curso/stack.md`) — pero esa pieza se enseña recién al final del curso, después de cubrir todos los RF (`SKILL.md` § Fase 9). Mientras tanto, el proyecto necesita algo que se comporte igual desde afuera (guardar, leer) sin necesitar todavía nada de eso.
 
@@ -35,21 +46,22 @@ Confirmado: la segunda tarea también recibió `id: 1`, y `tareasEnEsteMomento` 
 
 ```js
 // p2_afuera.mjs
-const tareas = [];
+const tareas = [];       // vive afuera de toda función -- una sola vez, para todo el proceso
 let siguienteId = 1;
 
 function crearTarea(datos) {
+  // toma el id ACTUAL de siguienteId, recién DESPUÉS lo incrementa
+  // (por el ++ después de la variable) -- y con ...datos copia adentro
+  // todos los campos que llegaron (título, descripción, fecha...)
   const registro = { id: siguienteId++, ...datos };
-  tareas.push(registro);
-  return registro;
+  tareas.push(registro); // se guarda en el array compartido
+  return registro;       // ← salida: el registro ya con su id
 }
 
 function listarTareas() {
-  return tareas;
+  return tareas; // ← salida: todo lo guardado hasta este momento
 }
 ```
-
-`{ id: siguienteId++, ...datos }` arma el registro completo: primero el id (usando el valor actual de `siguienteId`, y recién después incrementándolo, por el orden del operador `++` después de la variable), y con `...datos` copia adentro todos los campos que llegaron (título, descripción, fecha).
 
 ## 3. Crear y leer, demostrado de punta a punta
 
@@ -92,7 +104,16 @@ El resultado es idéntico — no porque los datos de la primera ejecución sigui
 ## 5. Buenas prácticas vigentes y errores comunes
 
 - **El array vive en un solo lugar, y las rutas lo usan a través de funciones** (`crearTarea`, `listarTareas`), no accediéndolo directamente desde cada ruta — el punto 2 ya lo demostró: si el array quedara mal ubicado, ni siquiera acumula datos dentro del mismo proceso. Esto es lo que en la Clase 06 va a permitir organizar esto como una clase de programación (un repositorio).
-- **El contador de ids nunca se reinicia manualmente ni se reutiliza un id ya usado** — aunque se borre una tarea, su id no se vuelve a asignar a una tarea nueva; evita confundir un registro viejo con uno nuevo que por casualidad comparta id.
+- **El contador de ids nunca se reinicia manualmente ni se reutiliza un id ya usado**:
+  ```js
+  // MAL -- si se borra la tarea con id 2, el próximo "crear" no debe
+  // reutilizar ese 2, aunque en ese momento sea el número más chico libre.
+  function eliminarTarea(id) {
+    tareas = tareas.filter((t) => t.id !== id);
+    siguienteId = id; // NO -- reutilizaría el id de algo que ya existió
+  }
+  ```
+  `siguienteId` solo avanza al crear (como en el punto 2), nunca retrocede al eliminar — evita confundir un registro viejo con uno nuevo que por casualidad comparta id.
 - **Esta simulación no es apta para producción bajo ningún concepto** — no es solo que se pierda al reiniciar (punto 4): tampoco funciona si el servidor corre en más de un proceso a la vez, porque cada proceso tendría su propio array, sin compartir nada entre sí — es la misma limitación del punto 4, pero entre dos procesos corriendo al mismo tiempo en vez de uno después del otro. Es una herramienta de aprendizaje para este punto del curso, no un atajo a mantener después de la Fase 9.
 
 ## 6. Lo que hay que poder responder sobre esto

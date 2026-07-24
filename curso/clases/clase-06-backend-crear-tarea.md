@@ -31,17 +31,20 @@ La Clase 05 guardó las tareas en un array con funciones sueltas (`crearTarea`, 
 ```js
 // curso/app/backend/src/repositorios/TareasRepositorio.js
 class TareasRepositorio {
-  #tareas = [];
+  #tareas = [];        // privado -- ver más abajo por qué importa
   #siguienteId = 1;
 
   crear(datos) {
+    // toma el id ACTUAL de #siguienteId, recién DESPUÉS lo incrementa
+    // (por el ++ después de la variable) -- y con ...datos copia adentro
+    // todos los campos que llegaron (título, descripción, fecha...)
     const tarea = { id: this.#siguienteId++, ...datos };
-    this.#tareas.push(tarea);
-    return tarea;
+    this.#tareas.push(tarea); // se guarda en el array interno
+    return tarea;              // ← salida: el registro ya con su id
   }
 
   listar() {
-    return this.#tareas;
+    return this.#tareas; // ← salida: todo lo guardado hasta el momento
   }
 }
 
@@ -94,9 +97,9 @@ app.use(express.json());
 const tareasRepositorio = new TareasRepositorio();
 
 app.post('/tasks', (req, res) => {
-  const { titulo, descripcion, fecha } = req.body;
-  const tarea = tareasRepositorio.crear({ titulo, descripcion, fecha, completada: false });
-  res.status(201).json(tarea);
+  const { titulo, descripcion, fecha } = req.body;               // entra: el cuerpo JSON de la petición
+  const tarea = tareasRepositorio.crear({ titulo, descripcion, fecha, completada: false }); // se guarda
+  res.status(201).json(tarea);                                    // sale: el registro creado, con 201
 });
 
 app.listen(3000, () => console.log('escuchando'));

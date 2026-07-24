@@ -2,9 +2,19 @@
 
 ## 1. Qué es un servidor y qué es una petición, en simple
 
-Hasta ahora todo el código construido vivía en el navegador. Un **servidor** es un programa aparte, corriendo en otra parte (en desarrollo, en la misma computadora, en otro proceso), cuyo trabajo es esperar a que alguien le pida algo y responder. El navegador (o cualquier otro programa) le manda una **petición** — un mensaje con una dirección, un método (qué quiere hacer: leer algo, crear algo, borrar algo) y, a veces, datos — y el servidor le devuelve una **respuesta**.
+Hasta ahora todo el código construido vivía en el navegador. Un **servidor** es un programa aparte, corriendo en otra parte (en desarrollo, en la misma computadora, en otro proceso), cuyo trabajo es esperar a que alguien le pida algo y responder. El navegador (o cualquier otro programa) le manda una **petición** — un mensaje con una dirección, un método (qué quiere hacer: leer algo, crear algo, borrar algo) y, a veces, datos — y el servidor le devuelve una **respuesta**:
 
-Esta relación (quien pide, quien responde) es la que va a permitir que el formulario de la Clase 03 termine guardando una tarea de verdad, en vez de solo imprimirla en la consola del navegador.
+```
+CLIENTE (navegador)                    SERVIDOR
+  |  petición: dirección + método +       |
+  |            datos (opcional)           |
+  |--------------------------------------->|
+  |                                        |  el servidor procesa
+  |  respuesta: datos + código de estado  |
+  |<---------------------------------------|
+```
+
+Esto todavía no es código ejecutable — es la relación que el resto de la clase va a construir, primero con Express (punto 2) y después probándola de verdad con `curl`. Esa misma relación es la que va a permitir que el formulario de la Clase 03 termine guardando una tarea de verdad, en vez de solo imprimirla en la consola del navegador.
 
 ## 2. Qué es Express, demostrado con una ruta real
 
@@ -13,10 +23,10 @@ Node.js ya trae, de por sí, la capacidad de crear un servidor con su módulo na
 ```js
 // s1_get.mjs
 import express from 'express';
-const app = express();
+const app = express(); // crea la aplicación
 
-app.get('/saludo', (req, res) => {
-  res.json({ mensaje: 'hola' });
+app.get('/saludo', (req, res) => { // ruta para el método GET
+  res.json({ mensaje: 'hola' });   // arma y manda la respuesta
 });
 
 app.listen(4001, () => console.log('escuchando en http://localhost:4001'));
@@ -123,6 +133,39 @@ status: 400
 ```
 
 POST con un dato válido respondió 201 con el registro creado (incluido el `id` que el servidor le asignó); POST sin el campo obligatorio respondió 400 con el error, sin crear nada. `res.json(...)` sin `res.status(...)` antes responde con 200 por defecto (visto en el punto 2) — por eso, para cualquier otro código, hay que pedirlo explícitamente con `res.status(N)` antes de `.json(...)`.
+
+Quedan cuatro códigos de la lista sin probar (204, 401, 403, 404) — este proyecto los va a necesitar más adelante (eliminar una tarea, proteger rutas con login), así que se comprueban ahora también, cada uno con su ruta mínima:
+
+```js
+// s6_otroscodigos.mjs
+app.delete('/algo/:id', (req, res) => {
+  res.status(204).send(); // se cumplió, sin cuerpo que devolver
+});
+app.get('/privado', (req, res) => {
+  res.status(401).json({ error: 'no autenticado' });
+});
+app.get('/ajeno', (req, res) => {
+  res.status(403).json({ error: 'no autorizado' });
+});
+app.get('/inexistente-real', (req, res) => {
+  res.status(404).json({ error: 'no encontrado' });
+});
+```
+```
+$ curl -s -o /dev/null -w "status: %{http_code}\n" -X DELETE http://localhost:4006/algo/1
+status: 204
+$ curl -s -w "\nstatus: %{http_code}\n" http://localhost:4006/privado
+{"error":"no autenticado"}
+status: 401
+$ curl -s -w "\nstatus: %{http_code}\n" http://localhost:4006/ajeno
+{"error":"no autorizado"}
+status: 403
+$ curl -s -w "\nstatus: %{http_code}\n" http://localhost:4006/inexistente-real
+{"error":"no encontrado"}
+status: 404
+```
+
+Los siete códigos que este proyecto va a usar, ya vistos con una respuesta real: 200 y 201 con cuerpo, 204 sin cuerpo (`res.status(204).send()`, sin `.json()`), y 400/401/403/404 cada uno con su `{ error: "..." }`.
 
 ## 5. Buenas prácticas vigentes y errores comunes
 

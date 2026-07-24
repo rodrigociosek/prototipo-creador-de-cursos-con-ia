@@ -44,7 +44,7 @@ Se arranca por el campo obligatorio, el título — un input controlado (Clase 0
 import { useState } from 'react';
 
 function FormularioNuevaTarea() {
-  const [titulo, setTitulo] = useState('');
+  const [titulo, setTitulo] = useState(''); // campo titulo del Modelo de datos
 
   return (
     <form>
@@ -53,9 +53,9 @@ function FormularioNuevaTarea() {
         <input
           id="titulo"
           type="text"
-          value={titulo}
+          value={titulo}                                     // input controlado (Clase 02)
           onChange={(evento) => setTitulo(evento.target.value)}
-          required
+          required                                            // único campo obligatorio
         />
       </div>
     </form>
@@ -87,7 +87,7 @@ const [fecha, setFecha] = useState('');
   <input
     id="descripcion"
     type="text"
-    value={descripcion}
+    value={descripcion}                            // sin "required" -- opcional
     onChange={(evento) => setDescripcion(evento.target.value)}
   />
 </div>
@@ -96,7 +96,7 @@ const [fecha, setFecha] = useState('');
   <label htmlFor="fecha">Fecha de vencimiento</label>
   <input
     id="fecha"
-    type="date"
+    type="date"                                    // selector nativo del navegador
     value={fecha}
     onChange={(evento) => setFecha(evento.target.value)}
   />
@@ -116,8 +116,8 @@ Los tres campos, cada uno con su propio `useState`, se actualizan de forma indep
 
 ```jsx
 function alEnviar(evento) {
-  evento.preventDefault(); // evita que el navegador recargue la página
-  console.log({ titulo, descripcion, fecha });
+  evento.preventDefault();               // evita que el navegador recargue la página
+  console.log({ titulo, descripcion, fecha }); // junta los tres estados en un solo objeto
 }
 ```
 ```jsx

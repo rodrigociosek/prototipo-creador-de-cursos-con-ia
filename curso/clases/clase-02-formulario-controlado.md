@@ -72,9 +72,39 @@ typeof del segundo elemento: function
 
 `useState('')` — el valor entre paréntesis es con el que arranca la primera vez — devolvió, en este render real, exactamente un array de dos posiciones: el valor actual (acá, `''`, el mismo que se le pasó) y una función interna de React (`dispatchAction`) que es la que hay que llamar para cambiarlo. Se desestructura como `const [titulo, setTitulo] = useState('')` porque eso es, literalmente, lo que devuelve.
 
-Llamar a `setTitulo('algo nuevo')` hace dos cosas a la vez: guarda ese nuevo valor, y le avisa a React que tiene que volver a ejecutar el componente (Render) para reflejarlo (Commit) — a diferencia de la variable común del punto 1, que no avisaba nada. Esto necesita una instancia de React montada de verdad (que actualice y vuelva a renderizar la misma llamada), algo que este entorno sin navegador no tiene — se verifica de forma real recién en la Clase 03.
+Llamar a `setTitulo('algo nuevo')` hace dos cosas a la vez: guarda ese nuevo valor, y le avisa a React que tiene que volver a ejecutar el componente (Render) para reflejarlo (Commit) — a diferencia de la variable común del punto 1, que no avisaba nada:
 
-**Regla que no se puede romper**: `useState` (y cualquier Hook de React) se llama siempre en el nivel superior del componente — nunca adentro de un `if`, un bucle o una función anidada. React identifica cada estado por el orden en que se llama, no por su nombre; si esa llamada apareciera solo a veces (por ejemplo, adentro de un `if`), React perdería la cuenta de cuál estado es cuál entre un render y el siguiente.
+```js
+// ilustrativo -- necesita una instancia de React ya montada en un
+// navegador para verse ejecutado de verdad (Clase 03); acá se muestra
+// el patrón, no un resultado corrido.
+function CampoTitulo() {
+  const [titulo, setTitulo] = useState('');
+  // ...
+  setTitulo('Comprar leche');
+  // ambas cosas pasan en esta misma llamada, no son dos pasos separados:
+  // 1. guarda 'Comprar leche' como el nuevo valor de titulo
+  // 2. le avisa a React "este componente necesita un nuevo Render"
+}
+```
+
+Esto necesita una instancia de React montada de verdad (que actualice y vuelva a renderizar la misma llamada), algo que este entorno sin navegador no tiene — se verifica de forma real recién en la Clase 03.
+
+**Regla que no se puede romper**: `useState` (y cualquier Hook de React) se llama siempre en el nivel superior del componente — nunca adentro de un `if`, un bucle o una función anidada. React identifica cada estado por el orden en que se llama, no por su nombre; si esa llamada apareciera solo a veces (por ejemplo, adentro de un `if`), React perdería la cuenta de cuál estado es cuál entre un render y el siguiente:
+
+```js
+// PATRÓN QUE ROMPE LA REGLA -- no se ejecuta, es solo para verlo:
+function Campo({ mostrarDescripcion }) {
+  const [titulo, setTitulo] = useState('');       // Hook #1, siempre
+  if (mostrarDescripcion) {
+    const [descripcion, setDescripcion] = useState(''); // Hook #2 -- A VECES
+  }
+  // en el render donde mostrarDescripcion es false, React solo ve 1 Hook;
+  // en el render donde es true, ve 2 -- pierde la cuenta de cuál es cuál.
+}
+```
+
+Comprobar el error real que esto produce necesita una instancia ya montada que se vuelva a renderizar con la condición cambiada — algo que este entorno sin navegador no tiene; se verifica de forma real recién en la Clase 03. El código de arriba no se corrió: es la representación del patrón prohibido, no una ejecución.
 
 ## 3. Cómo se conecta el estado con un input — formulario controlado, demostrado
 
@@ -83,8 +113,8 @@ Un `<input>` de HTML, por defecto, guarda lo que se escribe **por su cuenta**, e
 ```js
 // demo4.mjs
 function CampoTitulo({ valorInicial }) {
-  const [titulo] = useState(valorInicial);
-  return React.createElement('input', { type: 'text', value: titulo, onChange: () => {} });
+  const [titulo] = useState(valorInicial); // el estado arranca con lo que llegó por prop
+  return React.createElement('input', { type: 'text', value: titulo, onChange: () => {} }); // value sale siempre de titulo
 }
 console.log(renderToStaticMarkup(React.createElement(CampoTitulo, { valorInicial: 'Comprar leche' })));
 console.log(renderToStaticMarkup(React.createElement(CampoTitulo, { valorInicial: 'Llamar al dentista' })));
@@ -121,8 +151,21 @@ Ese warning es real, generado por React mismo apenas arma el elemento — no hiz
 ## 4. Buenas prácticas vigentes y errores comunes
 
 - **Nunca pases `value` sin `onChange`** — el punto 3 lo acaba de mostrar ejecutado: React tira ese warning apenas arma el elemento. Si de verdad se quiere un valor fijo no editable, se usa `readOnly`, no se omite el `onChange`.
-- **El estado inicial de un campo de texto nunca es `undefined` o `null`** — se usa `''` (string vacío). Esto es real pero no se puede demostrar en este entorno sin navegador: el warning que produce ("a component is changing an uncontrolled input to be controlled") aparece recién cuando el **mismo** input pasa de `undefined` a un texto real *entre dos renders de una instancia ya montada* — algo que necesita una página real corriendo, no una llamada aislada de `renderToStaticMarkup`. Se verifica de verdad en la Clase 03.
-- **Actualizar el estado siempre debe ser inmediato (síncrono) dentro del `onChange`** — si se retrasa (por ejemplo con un `setTimeout`), el cursor del input puede saltar de lugar mientras se escribe, porque el navegador ya movió el cursor pero React todavía no actualizó el valor. Por la misma razón que los dos puntos anteriores, esto solo se puede observar con una interacción de teclado real — se verifica en la Clase 03.
+- **El estado inicial de un campo de texto nunca es `undefined` o `null`** — se usa `''` (string vacío):
+  ```js
+  const [titulo, setTitulo] = useState(undefined); // MAL -- arranca sin valor
+  const [titulo, setTitulo] = useState('');         // BIEN -- arranca en string vacío
+  ```
+  El warning real que produce el primer caso ("a component is changing an uncontrolled input to be controlled") aparece recién cuando el **mismo** input pasa de `undefined` a un texto real *entre dos renders de una instancia ya montada* — algo que necesita una página real corriendo, no una llamada aislada de `renderToStaticMarkup`. Se verifica de verdad en la Clase 03.
+- **Actualizar el estado siempre debe ser inmediato (síncrono) dentro del `onChange`**:
+  ```js
+  function alCambiar(evento) {
+    const valor = evento.target.value;
+    setTimeout(() => setTitulo(valor), 0); // MAL -- retrasa la actualización
+    // setTitulo(valor);                   // BIEN -- inmediato, sin retraso
+  }
+  ```
+  Si se retrasa (como en la línea marcada MAL), el cursor del input puede saltar de lugar mientras se escribe, porque el navegador ya movió el cursor pero React todavía no actualizó el valor. Por la misma razón que el punto anterior, esto solo se puede observar con una interacción de teclado real — se verifica en la Clase 03.
 
 ## 5. Lo que hay que poder responder sobre esto
 
