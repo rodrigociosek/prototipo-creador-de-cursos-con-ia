@@ -17,7 +17,7 @@
 - [x] Fase 6.2 — Listado auditado (curso/auditoria-dependencias.md) — confirmada por el usuario el 2026-07-22
 - [x] Fase 7 — Índice generado como secuencia única (curso/indice.md) — 57 clases (21 conocimiento + 36 construcción); reescrito tras corrección de formato (ya no son 2 secciones separadas)
 - [x] Fase 7.1 — Índice auditado de punta a punta (curso/auditoria-indice.md) — corrigió agrupación indebida (K14/K15); confirmada por el usuario el 2026-07-22
-- [ ] Fase 8 — Clases de construcción generadas (ver detalle abajo) — EN CURSO (Clase 05 de 57 hecha)
+- [ ] Fase 8 — Clases de construcción generadas (ver detalle abajo) — EN CURSO (Clase 06 de 57 hecha)
 - [ ] Fase 9 — Bloque de integración de BD real
 - [ ] Fase 10 — Auditoría final (curso/auditoria-final.md)
 
@@ -27,8 +27,10 @@
 - [x] Clase 03 — [Construcción — interfaz] T-03 — hecha el 2026-07-22 (scaffold de curso/app/frontend con Vite, FormularioNuevaTarea.jsx)
 - [x] Clase 04 — Express, rutas, JSON, códigos de estado (K1,K3,K4,K5) — [conocimiento] — hecha el 2026-07-22
 - [x] Clase 05 — Persistencia simulada crear/leer (K6) — [conocimiento] — hecha el 2026-07-22
-- [ ] Clase 06 — [Construcción — backend] T-01, T-02 — SIGUIENTE
-... (Clases 07 a 57 según curso/indice.md, se van agregando a esta lista a medida que se acercan — ver curso/indice.md para el detalle completo de las 57)
+- [x] Clase 06 — [Construcción — backend] T-01, T-02 — hecha el 2026-07-22 (curso/app/backend, endpoint POST /tasks)
+- [ ] Clase 07 — Peticiones HTTP frontend + actualización de estado (K12,K13) — [conocimiento] — SIGUIENTE
+- [ ] Clase 08 — [Construcción — conexión] T-04
+... (Clases 09 a 57 según curso/indice.md, se van agregando a esta lista a medida que se acercan — ver curso/indice.md para el detalle completo de las 57)
 
 ## Notas para retomar
 Arranque del curso (2026-07-22). Proyecto: TodoList con login, recordatorios por SMS y frontend React+Vite (según `funcionalidades.md`). `curso/` y `app/` no existían antes de esta sesión — se parte de cero.
@@ -45,4 +47,6 @@ Clase 04: primer paso del lado del backend. Servidor Express de ejemplo probado 
 
 Clase 05: persistencia simulada demostrada ejecutando el mismo script dos veces como procesos separados — los ids se reinician ambas veces, mostrando el límite real (se pierde todo al reiniciar).
 
-Próximo paso: Clase 06 (construcción — backend, T-01/T-02), primer código real del backend del proyecto.
+Clase 06: primer código real del backend. Se scaffoldeó `curso/app/backend/` (`npm init` + `express@5.2.1`, coincide exacto con `curso/auditoria-stack.md`), se organizó la persistencia simulada como clase (`TareasRepositorio`, campos privados `#tareas`/`#siguienteId`) y se construyó `POST /tasks` (T-01+T-02) siguiendo el contrato de `curso/tareas.md`. Verificado con `curl` real: 201, 400, y 201 con id correlativo (2) — confirmando que el estado persiste entre peticiones dentro de un mismo proceso, a diferencia de la Clase 05.
+
+Próximo paso: Clase 07 (conocimiento — peticiones HTTP desde el frontend + actualización de estado tras una respuesta asíncrona, K12/K13), para poder conectar el formulario de la Clase 03 con este endpoint en la Clase 08.
