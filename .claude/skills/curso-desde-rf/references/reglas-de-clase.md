@@ -14,7 +14,7 @@ De estos tres marcos, esta es la regla operativa que toda clase cumple, sin exce
 
 1. **Todo concepto se explica con su porqué, nunca solo con su qué.** No alcanza con decir qué hace algo — hay que justificar por qué existe y por qué se resuelve así y no de otra forma.
 2. **Ningún término técnico se usa antes de definirse en lenguaje simple.** Si hace falta una palabra nueva, se define primero con palabras que el lector ya conoce — nunca se asume que ya la sabe.
-3. **Todo concepto nuevo se acompaña de al menos un ejemplo aplicado**, no solo la definición de manual — ver algo en uso es lo que lo vuelve concreto (Bloom: *exemplify*).
+3. **Todo concepto nuevo se acompaña de al menos un ejemplo aplicado**, no solo la definición de manual — ver algo en uso es lo que lo vuelve concreto (Bloom: *exemplify*). La mecánica exacta de cómo y cuándo se muestra ese ejemplo — inmediatamente, afirmación por afirmación — está en la Regla 6 más abajo.
 4. **Todo concepto se conecta explícitamente con algo que el lector ya sabe** (ver el chequeo recursivo, regla 7 más abajo) — entender es enlazar lo nuevo con lo ya sabido, no memorizar un dato aislado (Wiggins & McTighe: *interpretación*).
 5. **Antes de dar una explicación por cerrada, se le aplica el test de Feynman**: ¿esta explicación se entendería sin haber leído nada más de la clase, sin ningún término sin definir? Si la respuesta es no, hay un hueco que se llena antes de seguir.
 6. **Se prioriza la transferencia sobre la repetición.** Al razonar el resultado de un ejemplo o una ejecución real, se plantea qué pasaría con una variación (otro dato de entrada, otro caso) en vez de solo confirmar que el ejemplo dado funcionó — eso es lo que distingue haber entendido de haber memorizado un resultado puntual (Bloom: *predecir/inferir*).
@@ -82,14 +82,58 @@ Se evalúan clase a clase. Se aplican únicamente si resuelven un problema real 
 
 El cuerpo de la clase es una secuencia de pasos numerados, de punta a punta, sin omitir ninguno. Cada paso parte de donde dejó el paso anterior — nunca es una lista de puntos inconexos. El número de pasos varía libremente según el tema: una clase de conocimiento puro puede tener pocos pasos conceptuales; una clase de construcción puede tener muchos pasos de código.
 
-### 6. Cada paso declara qué, cómo y dónde
+### 6. Cada afirmación se demuestra ahí mismo, no se deja para el final
 
 Todo paso dice explícitamente, antes o junto con el contenido:
 - **Qué queremos generar/lograr** — el propósito de ese paso puntual.
 - **Qué estamos haciendo** — la acción concreta (explicar un concepto, escribir una función, correr un comando).
 - **Dónde** — el archivo/carpeta/ubicación exacta cuando el paso toca el proyecto real.
 
+Además, de forma obligatoria y sin excepción: **toda afirmación sobre cómo se comporta algo se corta ahí mismo para demostrarse, ejecutada, con su entrada y su salida reales** — nunca se deja la demostración para un bloque de ejemplo consolidado más abajo o para el final del paso/la clase. Quien escribe la clase actúa como un tutor que, a medida que explica, va tipeando y corriendo cada pieza en el momento en que la menciona — la prosa nunca avanza a la siguiente afirmación sin haber mostrado la anterior funcionando.
+
+Esto aplica igual a clases de conocimiento y de construcción:
+- **En una clase de conocimiento**, cada afirmación sobre el comportamiento de un concepto (qué se reinicia, qué dispara, qué devuelve, qué cambia) se corta ahí mismo con el fragmento ejecutable mínimo que la demuestra — no hace falta el ejemplo completo del concepto, alcanza con lo mínimo para ver esa afirmación puntual en acción.
+- **En una clase de construcción**, cada pieza de código nueva que cambia el comportamiento observable (una ruta nueva, una validación nueva, un campo nuevo) se demuestra apenas se agrega — nunca se escribe el archivo completo primero y se prueba todo junto recién al final. Si una pieza todavía no es ejecutable de forma aislada (por ejemplo, una función que solo tiene sentido dentro de una ruta ya completa), se demuestra con el fragmento mínimo que sí puede correr por su cuenta (una llamada directa a la función, un caso suelto) antes de integrarla a la pieza mayor.
+
+**Ejemplo de la mecánica** (afirmación → corte → demostración ejecutada → recién ahí se retoma la explicación):
+
+> El componente de la clase anterior siempre mostraba lo mismo — recibía props y las mostraba, sin cambiar nunca por sí solo.
+>
+> ```js
+> function Greeting(props) {
+>   return React.createElement('h1', null, `Hola, ${props.name}`);
+> }
+> console.log(renderToStaticMarkup(React.createElement(Greeting, { name: 'Ana' })));
+> ```
+> ```
+> $ node demo.mjs
+> <h1>Hola, Ana</h1>
+> ```
+> Le pasamos `name: 'Ana'` una vez — esa fue toda la información que usó. Volver a llamarlo con el mismo prop da exactamente lo mismo, siempre.
+>
+> Un campo de texto necesita algo distinto: recordar lo que el usuario va escribiendo. Una variable común no alcanza, porque React vuelve a llamar a la función en cada render y cualquier variable declarada adentro se reinicia con ese llamado.
+>
+> ```js
+> function Campo() {
+>   let texto = '';
+>   console.log('texto al entrar:', JSON.stringify(texto));
+>   texto = 'Comprar leche';
+>   console.log('texto tras "escribir":', JSON.stringify(texto));
+> }
+> Campo(); // primer "render"
+> Campo(); // React vuelve a llamar -- segundo "render"
+> ```
+> ```
+> $ node demo-reinicio.mjs
+> texto al entrar: ""
+> texto tras "escribir": "Comprar leche"
+> texto al entrar: ""              ← se reinició, sin memoria de la llamada anterior
+> texto tras "escribir": "Comprar leche"
+> ```
+
 Ningún paso muestra código o una acción sin decir antes para qué es y dónde va. Todo código incluido lleva comentarios que identifican qué hace, qué entra y qué sale.
+
+**Qué NO hacer**: no expliques dos o más afirmaciones de comportamiento seguidas en prosa y recién después las demuestres juntas — cada una se corta y se muestra por separado, en el momento exacto en que se afirma. No dejes la única demostración de un paso para un bloque "vamos a probar esto" al final del paso o de la clase — eso es exactamente el patrón que esta regla reemplaza. No uses una demostración grande como sustituto de las chicas — las demostraciones puntuales por afirmación son obligatorias aunque más adelante también haya una demostración mayor que integre varias piezas (eso sigue aplicando, ver "Ejecución real, siempre").
 
 ### 7. El chequeo recursivo de conocimiento va entretejido en cada paso, no aparte
 
@@ -107,7 +151,7 @@ Una clase de conocimiento enseña el concepto con la profundidad real que tiene,
 
 ## Ejecución real, siempre
 
-Todo resultado de ejecutar código (un comando, un servidor, una prueba) que aparece en la clase se ejecutó de verdad en el entorno disponible — nunca se describe un resultado como si se hubiera corrido sin haberlo hecho. Si algo genuinamente no se puede ejecutar en este entorno (credencial real no disponible, servicio de pago, hardware ausente), la clase lo dice explícitamente y explica qué haría falta para que el usuario lo verifique él mismo.
+Todo resultado de ejecutar código (un comando, un servidor, una prueba) que aparece en la clase se ejecutó de verdad en el entorno disponible — nunca se describe un resultado como si se hubiera corrido sin haberlo hecho. Esto vale igual para las demostraciones puntuales y chicas que exige la Regla 6 (una por cada afirmación) como para una demostración mayor que integre varias piezas al final de un paso — ninguna de las dos se fabrica ni se reconstruye de memoria. Si algo genuinamente no se puede ejecutar en este entorno (credencial real no disponible, servicio de pago, hardware ausente), la clase lo dice explícitamente y explica qué haría falta para que el usuario lo verifique él mismo.
 
 ## Investigación real, siempre
 
@@ -118,6 +162,7 @@ Antes de escribir el contenido de una clase de conocimiento (o la parte teórica
 - No fuerces una estructura de secciones igual entre clases distintas — las reglas de arriba son el contrato, no una plantilla de títulos.
 - No agregues un bloque de metadatos (Tipo/Depende de/Introduce/Tareas que avanza/RF relacionados) antes del contenido, ni abras la clase justificando su lugar en el curso con IDs internos (RF-XX, T-XX, número de Clase) — ver "La clase empieza directo en el tema" más arriba.
 - No escribas un paso sin su qué/cómo/dónde.
+- No expliques dos o más afirmaciones de comportamiento seguidas y las demuestres recién después, juntas — cada afirmación se corta ahí mismo con su propia demostración ejecutada (Regla 6), sea clase de conocimiento o de construcción.
 - No introduzcas un patrón de diseño que no resuelve nada real en esa clase.
 - No modifiques la rama principal fuera del punto 2, ni publiques en un remoto sin permiso explícito en el momento.
 - No des un concepto por sabido sin haberlo confirmado contra `curso/conceptos-enseñados.md`.
