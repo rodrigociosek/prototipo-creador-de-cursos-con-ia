@@ -17,15 +17,16 @@
 - [x] Fase 6.2 — Listado auditado (curso/auditoria-dependencias.md) — confirmada por el usuario el 2026-07-22
 - [x] Fase 7 — Índice generado como secuencia única (curso/indice.md) — 57 clases (21 conocimiento + 36 construcción); reescrito tras corrección de formato (ya no son 2 secciones separadas)
 - [x] Fase 7.1 — Índice auditado de punta a punta (curso/auditoria-indice.md) — corrigió agrupación indebida (K14/K15); confirmada por el usuario el 2026-07-22
-- [ ] Fase 8 — Clases de construcción generadas (ver detalle abajo) — EN CURSO (Clase 02 de 57 hecha)
+- [ ] Fase 8 — Clases de construcción generadas (ver detalle abajo) — EN CURSO (Clase 03 de 57 hecha)
 - [ ] Fase 9 — Bloque de integración de BD real
 - [ ] Fase 10 — Auditoría final (curso/auditoria-final.md)
 
 ## Clases (Fases 8 y 9)
 - [x] Clase 01 — Qué es un componente de React y cómo React lo convierte en pantalla — [conocimiento] — hecha el 2026-07-22 (K10)
 - [x] Clase 02 — Formulario controlado en React (K11) — [conocimiento] — hecha el 2026-07-22
-- [ ] Clase 03 — [Construcción — interfaz] T-03 — SIGUIENTE
-... (Clases 04 a 57 según curso/indice.md, se van agregando a esta lista a medida que se acercan — ver curso/indice.md para el detalle completo de las 57)
+- [x] Clase 03 — [Construcción — interfaz] T-03 — hecha el 2026-07-22 (scaffold de curso/app/frontend con Vite, FormularioNuevaTarea.jsx)
+- [ ] Clase 04 — Express, rutas, JSON, códigos de estado (K1,K3,K4,K5) — [conocimiento] — SIGUIENTE
+... (Clases 05 a 57 según curso/indice.md, se van agregando a esta lista a medida que se acercan — ver curso/indice.md para el detalle completo de las 57)
 
 ## Notas para retomar
 Arranque del curso (2026-07-22). Proyecto: TodoList con login, recordatorios por SMS y frontend React+Vite (según `funcionalidades.md`). `curso/` y `app/` no existían antes de esta sesión — se parte de cero.
@@ -34,6 +35,8 @@ Fase 1: se extrajeron 12 RF. Los bullets de la sección "Interfaz de usuario" de
 
 Fase 1.5: tabla de prioridad confirmada. Fases 2-7.1 completas y confirmadas (ver checklist arriba). Índice final: 57 clases (`curso/indice.md`).
 
-Fase 8 en curso. Clase 01 (React y componentes, K10) y Clase 02 (formulario controlado, K11) hechas el 2026-07-22, cada una en su rama, commiteadas.
+Fase 8 en curso. Clase 01 (React y componentes, K10), Clase 02 (formulario controlado, K11) y Clase 03 (construcción — interfaz, T-03) hechas el 2026-07-22, cada una en su rama, commiteadas.
 
-Próximo paso: Clase 03 (construcción — interfaz, T-03), primer código real del proyecto.
+Clase 03: primer código real del proyecto. Se scaffoldeó `curso/app/frontend/` con Vite (React 19.2.8, Vite 8.1.5 — coinciden exacto con `curso/auditoria-stack.md`), se construyó `FormularioNuevaTarea.jsx` (T-03) y se verificó con interacción real en navegador (`.claude/launch.json` agregado para poder previsualizarlo) — se pudo confirmar ahí lo que las Clases 01/02 habían dejado pendiente por falta de navegador (el `onChange` real de un input controlado). El envío del formulario todavía no llama a ningún backend — eso es una tarea posterior, después de que el backend exista.
+
+Próximo paso: Clase 04 (conocimiento — Express, rutas, JSON, códigos de estado — K1,K3,K4,K5), primer paso del lado del backend.

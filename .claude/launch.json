@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "todolist-frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "curso/app/frontend", "--", "--port", "5180", "--strictPort"],
+      "port": 5180,
+      "autoPort": false
+    }
+  ]
+}
