@@ -24,31 +24,22 @@ backend@1.0.0
 
 Coincide exacto.
 
-## 2. La persistencia simulada, ahora como una clase
+## 2. La persistencia simulada, como una clase, probada sola antes de conectarla a nada
 
 La Clase 05 guardó las tareas en un array con funciones sueltas (`crearTarea`, `listarTareas`). Ahora que ese array va a tener varias operaciones relacionadas usándolo, se organiza como una clase de programación — el criterio por defecto de este curso para agrupar una responsabilidad real del proyecto:
 
 ```js
 // curso/app/backend/src/repositorios/TareasRepositorio.js
-//
-// Persistencia simulada de tareas, organizada como clase: agrupa el
-// array, el contador de ids, y las operaciones que los usan, en un
-// solo lugar -- nadie fuera de esta clase toca el array directamente
-// (los campos que empiezan con # son privados de la clase).
 class TareasRepositorio {
   #tareas = [];
   #siguienteId = 1;
 
-  // Entra: los campos de una tarea nueva (sin id).
-  // Sale: el registro creado, con su id ya asignado.
   crear(datos) {
     const tarea = { id: this.#siguienteId++, ...datos };
     this.#tareas.push(tarea);
     return tarea;
   }
 
-  // Entra: nada.
-  // Sale: el array completo de tareas guardadas hasta ahora.
   listar() {
     return this.#tareas;
   }
@@ -57,61 +48,86 @@ class TareasRepositorio {
 export default TareasRepositorio;
 ```
 
-## 3. El endpoint: crear tarea (T-01) y validar el título (T-02)
+Antes de conectar esto a ninguna ruta HTTP, se prueba la clase sola, sin Express de por medio:
 
 ```js
-// curso/app/backend/server.js
+// t1_repositorio_solo.mjs
+import TareasRepositorio from './TareasRepositorio.js';
+
+const repo = new TareasRepositorio();
+console.log('crear #1:', repo.crear({ titulo: 'Comprar leche' }));
+console.log('crear #2:', repo.crear({ titulo: 'Llamar al dentista' }));
+console.log('listar():', repo.listar());
+```
+```
+$ node t1_repositorio_solo.mjs
+crear #1: { id: 1, titulo: 'Comprar leche' }
+crear #2: { id: 2, titulo: 'Llamar al dentista' }
+listar(): [
+  { id: 1, titulo: 'Comprar leche' },
+  { id: 2, titulo: 'Llamar al dentista' }
+]
+```
+
+Funciona igual que la versión con funciones sueltas de la Clase 05, ahora agrupada en un objeto. Los campos que empiezan con `#` (`#tareas`, `#siguienteId`) son **privados de la clase** — nadie fuera de sus propios métodos puede tocarlos directamente. Esto también se comprueba, no solo se afirma:
+
+```js
+console.log('¿repo.tareas existe desde afuera?', repo.tareas);
+```
+```
+¿repo.tareas existe desde afuera? undefined
+```
+
+Intentar leer `repo.tareas` (sin el `#`) devuelve `undefined` — ni siquiera existe esa propiedad pública. La única forma de leer o modificar las tareas guardadas es a través de los métodos que la propia clase expone (`crear`, `listar`) — exactamente lo que impide que, más adelante, otra parte del código del backend termine tocando el array directamente y salteándose la lógica de la clase.
+
+## 3. El endpoint sin validación todavía, para ver por qué hace falta T-02
+
+Se conecta primero la ruta más simple posible — crear una tarea, sin validar nada — para comprobar en carne propia el problema que T-02 va a resolver:
+
+```js
+// server.js (versión parcial, sin validación)
 import express from 'express';
 import TareasRepositorio from './src/repositorios/TareasRepositorio.js';
 
 const app = express();
 app.use(express.json());
-
 const tareasRepositorio = new TareasRepositorio();
 
-// POST /tasks (T-01 + T-02): crea una tarea nueva.
-// Por ahora la tarea solo tiene titulo/descripcion/fecha/completada
-// -- usuarioId (RF-04), telefono y recordatorio (RF-10) se agregan
-// en clases futuras, cuando a esos RF les toque construirse.
 app.post('/tasks', (req, res) => {
   const { titulo, descripcion, fecha } = req.body;
-
-  // T-02: el título es obligatorio -- sin él, no se crea nada.
-  if (!titulo) {
-    res.status(400).json({ error: 'titulo es obligatorio' });
-    return;
-  }
-
-  const tarea = tareasRepositorio.crear({
-    titulo,
-    descripcion,
-    fecha,
-    completada: false,
-  });
-
+  const tarea = tareasRepositorio.crear({ titulo, descripcion, fecha, completada: false });
   res.status(201).json(tarea);
 });
 
-app.listen(3000, () => {
-  console.log('backend escuchando en http://localhost:3000');
-});
+app.listen(3000, () => console.log('escuchando'));
+```
+```
+$ curl -s -w "\nstatus: %{http_code}\n" -X POST http://localhost:3000/tasks -H "Content-Type: application/json" -d '{"titulo":"Comprar leche"}'
+{"id":1,"titulo":"Comprar leche","completada":false}
+status: 201
+
+$ curl -s -w "\nstatus: %{http_code}\n" -X POST http://localhost:3000/tasks -H "Content-Type: application/json" -d '{"descripcion":"sin titulo"}'
+{"id":2,"descripcion":"sin titulo","completada":false}
+status: 201
 ```
 
-Esto sigue exactamente el contrato fijado en `curso/tareas.md`: `201` con el registro creado si el título vino, `400` con `{ error: "..." }` si no vino — nada de esto se inventó al escribir la clase, salió de esa especificación.
+Ahí está el problema, confirmado con una petición real: la segunda petición no traía `titulo`, y aun así el servidor la aceptó y creó una "tarea" sin título, con `201`. Eso es exactamente lo que T-02 tiene que evitar.
 
-## 4. Vamos a probarlo de verdad
+## 4. T-02: validar el título, verificado con el caso que acaba de fallar
 
+```js
+// se agrega adentro de app.post('/tasks', ...), antes de crear la tarea
+if (!titulo) {
+  res.status(400).json({ error: 'titulo es obligatorio' });
+  return;
+}
 ```
-$ node server.js
-backend escuchando en http://localhost:3000
-```
 
-Tres peticiones reales, contra el servidor corriendo:
+Se repite exactamente la misma petición del punto 3 que antes se había aceptado mal, más una tercera para confirmar que el título válido sigue funcionando y que el contador de ids sigue el hilo:
 
 ```
 $ curl -s -w "\nstatus: %{http_code}\n" -X POST http://localhost:3000/tasks \
-    -H "Content-Type: application/json" \
-    -d '{"titulo":"Comprar leche","descripcion":"2% para el desayuno"}'
+    -H "Content-Type: application/json" -d '{"titulo":"Comprar leche","descripcion":"2% para el desayuno"}'
 {"id":1,"titulo":"Comprar leche","descripcion":"2% para el desayuno","completada":false}
 status: 201
 
@@ -126,14 +142,15 @@ $ curl -s -w "\nstatus: %{http_code}\n" -X POST http://localhost:3000/tasks \
 status: 201
 ```
 
-La segunda tarea válida recibió `id: 2` — a diferencia de la Clase 05, donde cada ejecución era un proceso nuevo y el contador siempre volvía a arrancar en 1, acá **las tres peticiones le llegaron al mismo proceso del servidor**, así que `TareasRepositorio` mantuvo su estado entre una y otra: esto es, en la práctica, la diferencia entre "un script que corre y termina" y "un servidor que queda escuchando".
+Ahora sí: la petición sin título respondió `400` con el error, **sin crear nada** (a diferencia del punto 3) — y la tercera petición válida recibió `id: 2`, no `id: 1`, porque las tres peticiones le llegaron al mismo proceso del servidor, y `TareasRepositorio` mantuvo su estado entre una y otra. Esto sigue exactamente el contrato fijado en `curso/tareas.md`: `201` con el registro creado si el título vino, `400` con `{ error: "..." }` si no vino — nada de esto se inventó al escribir la clase, salió de esa especificación.
 
 ## 5. Qué queda pendiente, a propósito
 
-Este endpoint todavía no lo llama nadie desde la interfaz — el formulario de la Clase 03 sigue imprimiendo en la consola del navegador en vez de mandar la petición acá. Conectar las dos puntas es la Clase 08 (T-04). Tampoco hay todavía forma de leer la lista de tareas guardadas (eso es T-03 del backend... en realidad T-05, la próxima tarea del plan, no de esta clase) — por ahora, el único jeito de comprobar que algo se guardó es lo que ya se hizo: mirar la respuesta de cada `POST`.
+Este endpoint todavía no lo llama nadie desde la interfaz — el formulario de la Clase 03 sigue imprimiendo en la consola del navegador en vez de mandar la petición acá. Conectar las dos puntas es una tarea aparte (T-04). Tampoco hay todavía forma de leer la lista de tareas guardadas (T-05, la próxima tarea del plan) — por ahora, el único modo de comprobar que algo se guardó es lo que ya se hizo en el punto 4: mirar la respuesta de cada `POST`.
 
 ## Control de versiones de esta clase
 
 1. Rama `clase-06-backend-crear-tarea`, creada desde `main`.
 2. Primer código real del backend: `curso/app/backend/` completo (`server.js`, `src/repositorios/TareasRepositorio.js`, `package.json`, `.gitignore`).
-3. Verificado con ejecución real: servidor levantado de verdad, tres peticiones con `curl` (201, 400, 201 con id correlativo).
+3. Verificado con ejecución real, en etapas (puntos 2, 3 y 4): el repositorio probado solo antes de conectarlo a Express, el endpoint sin validación mostrando el problema real que causa, y recién después T-02 resolviéndolo — no una única prueba consolidada al final.
+4. **Revisión**: contenido reescrito para aplicar la Regla 6 de `references/reglas-de-clase.md` (cada pieza de código nueva se demuestra apenas se agrega). Se agregaron dos demostraciones que la versión anterior no tenía: la comprobación real de que los campos privados (`#tareas`) son inaccesibles desde afuera de la clase, y el endpoint sin validar corriendo primero para mostrar el problema concreto antes de aplicar la solución.
